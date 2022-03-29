@@ -63,3 +63,31 @@ class QuestionIndexViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "[New]")
         self.assertQuerysetEqual(response.context['question_list'],[question])
+
+    def test_past_question(self):
+        """
+        Questions with a pub_date in the past are displayed on the index page.
+        """
+        past_time = timezone.now() + datetime.timedelta(days=-30)
+        question = Question(question_text="test", pub_date=past_time)
+        question.save()
+        response = self.client.get("/polls/")
+
+        self.assertQuerysetEqual(
+            response.context['question_list'],
+            [question],
+        )
+
+    def test_future_question(self):
+        """
+        Questions with a pub_date in the future aren't displayed on the index page.
+        """
+        future_time = timezone.now() + datetime.timedelta(days=30)
+        question = Question(question_text="test", pub_date=future_time)
+        question.save()
+        response = self.client.get("/polls/")
+        self.assertContains(response, "등록된 설문조사가 없습니다.")
+        self.assertQuerysetEqual(
+            response.context['question_list'],
+            [],
+        )
