@@ -4,6 +4,16 @@ from .models import Question, Choice
 import datetime
 # Create your tests here.
 
+def create_question(question_text, timedelta_from_now):
+    """
+    Create a question with the given 'question_text' and 'timedelta_from_now'
+    """
+    time = timezone.now() + timedelta_from_now
+    question = Question(question_text=question_text, pub_date=time)
+    question.save()
+
+    return question
+
 class QuestionModelTests(TestCase):
     def test_was_published_recently_with_future_question(self):
         """
@@ -54,9 +64,11 @@ class QuestionIndexViewTests(TestCase):
         Question with a recent pub_date are displayed on the index page with [New] Mark.
         '''
 
-        recent_time = timezone.now() - datetime.timedelta(hours=8)
-        question = Question(question_text="test", pub_date=recent_time)
-        question.save()
+        #recent_time = timezone.now() - datetime.timedelta(hours=8)
+        #question = Question(question_text="test", pub_date=recent_time)
+        # question.save()
+        question = create_question(question_text="Recent question.", timedelta_from_now=datetime.timedelta(hours=-8))
+
 
         response = self.client.get("/polls/")
 
@@ -68,9 +80,11 @@ class QuestionIndexViewTests(TestCase):
         """
         Questions with a pub_date in the past are displayed on the index page.
         """
-        past_time = timezone.now() + datetime.timedelta(days=-30)
-        question = Question(question_text="test", pub_date=past_time)
-        question.save()
+        # past_time = timezone.now() + datetime.timedelta(days=-30)
+        # question = Question(question_text="test", pub_date=past_time)
+        # question.save()
+        question = create_question(question_text="Past question.", timedelta_from_now=datetime.timedelta(days=-30))
+
         response = self.client.get("/polls/")
 
         self.assertQuerysetEqual(
@@ -82,9 +96,11 @@ class QuestionIndexViewTests(TestCase):
         """
         Questions with a pub_date in the future aren't displayed on the index page.
         """
-        future_time = timezone.now() + datetime.timedelta(days=30)
-        question = Question(question_text="test", pub_date=future_time)
-        question.save()
+        # future_time = timezone.now() + datetime.timedelta(days=30)
+        # question = Question(question_text="test", pub_date=future_time)
+        # question.save()
+        create_question(question_text="Future question.", timedelta_from_now=datetime.timedelta(days=30))
+
         response = self.client.get("/polls/")
         self.assertContains(response, "등록된 설문조사가 없습니다.")
         self.assertQuerysetEqual(
@@ -96,12 +112,14 @@ class QuestionIndexViewTests(TestCase):
         """
         The questions index page may display multiple questions order by pub_date desc page.
         """
-        much_past_time = timezone.now() - datetime.timedelta(days=30)
-        question1 = Question(question_text="Past question 1.", pub_date=much_past_time)
-        question1.save()
-        past_time = timezone.now() - datetime.timedelta(days=5)
-        question2 = Question(question_text="Past question 2.", pub_date=past_time)
-        question2.save()
+        # much_past_time = timezone.now() - datetime.timedelta(days=30)
+        # question1 = Question(question_text="Past question 1.", pub_date=much_past_time)
+        # question1.save()
+        # past_time = timezone.now() - datetime.timedelta(days=5)
+        # question2 = Question(question_text="Past question 2.", pub_date=past_time)
+        # question2.save()
+        question1 = create_question(question_text="Past question 1.", timedelta_from_now=datetime.timedelta(days=-30))
+        question2 = create_question(question_text="Past question 2.", timedelta_from_now=datetime.timedelta(days=-5))
 
         response = self.client.get("/polls/")
         self.assertQuerysetEqual(
