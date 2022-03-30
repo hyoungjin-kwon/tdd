@@ -89,5 +89,22 @@ class QuestionIndexViewTests(TestCase):
         self.assertContains(response, "등록된 설문조사가 없습니다.")
         self.assertQuerysetEqual(
             response.context['question_list'],
-            [],
+            []
+        )
+
+    def test_two_past_questions(self):
+        """
+        The questions index page may display multiple questions order by pub_date desc page.
+        """
+        much_past_time = timezone.now() - datetime.timedelta(days=30)
+        question1 = Question(question_text="Past question 1.", pub_date=much_past_time)
+        question1.save()
+        past_time = timezone.now() - datetime.timedelta(days=5)
+        question2 = Question(question_text="Past question 2.", pub_date=past_time)
+        question2.save()
+
+        response = self.client.get("/polls/")
+        self.assertQuerysetEqual(
+            response.context['question_list'],
+            [question2, question1],
         )

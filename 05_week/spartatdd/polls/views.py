@@ -7,7 +7,7 @@ from .models import Question
 def index(request):
     question_list = Question.objects.all().filter(
         pub_date__lte=timezone.now()
-    )
+    ).order_by('-pub_date')
     #output = ', '.join([q.question_text for q in question_list])
     context = {
         'question_list': question_list
